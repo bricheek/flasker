@@ -5,7 +5,6 @@ app = Flask(__name__)
 
 #create a route decorator
 @app.route('/')
-
 def index():
     first_name = "John"
     stuff = "This is bold text."
@@ -13,7 +12,7 @@ def index():
     return render_template("index.html", 
     given_name = first_name, 
     stuff=stuff,
-    favorite_pizza=favorite_pizza
+    favorite_pizza=favorite_pizza,
     )
 
 @app.route('/user/<name>')
