@@ -1,4 +1,7 @@
 from flask import Flask, render_template
+from wtforms import Form
+from wtforms import SubmitField, StringField
+from wtforms.validators import DataRequired, input_required
 
 #create flask instance
 app = Flask(__name__)
@@ -15,6 +18,24 @@ def index():
     favorite_pizza=favorite_pizza,
     )
 
+app.config['SECRET_KEY'] = "secret key ###"
+
+# class SignupForm(Form):
+#     age = IntegerField('Age')
+
+# def validate_age(form, field):
+#     if field.data < 13:
+#         raise ValidationError("We're sorry, you must be 13 or older to register")
+
+# class MyForm(Form):
+#     first_name = StringField('First Name', validators=[validators.input_required()])
+#     last_name  = StringField('Last Name', validators=[validators.optional()])
+
+#create form class
+class NamerForm(Form):
+    name = StringField("What's Your Name" , validators=[input_required()])
+    submit = SubmitField("Submit")
+
 @app.route('/user/<name>')
 def user(name):
     return render_template("user.html", user_name=name)
@@ -30,4 +51,18 @@ def page_not_found(e):
 def page_not_found(e):
     return render_template("500.html"), 500
 
+
+#Create name page
+app.route('/name', methods=['GET', 'POST'])
+def name():
+    name = None
+    form = NamerForm()
+    #validate form
+    if form.validate_on_submit():
+        name=form.name.data
+        form.name.data = ''
+
+    return render_template('name.html',
+    name = name,
+    form = form,)
 
