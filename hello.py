@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 from wtforms import Form
 from wtforms import SubmitField, StringField
 from wtforms.validators import DataRequired, input_required
@@ -15,7 +15,7 @@ def index():
     return render_template("index.html", 
     given_name = first_name, 
     stuff=stuff,
-    favorite_pizza=favorite_pizza,
+    favorite_pizza=favorite_pizza
     )
 
 app.config['SECRET_KEY'] = "secret key ###"
@@ -33,7 +33,7 @@ app.config['SECRET_KEY'] = "secret key ###"
 
 #create form class
 class NamerForm(Form):
-    name = StringField("What's Your Name" , validators=[input_required()])
+    name = StringField("What's Your Name", validators=[input_required()])
     submit = SubmitField("Submit")
 
 @app.route('/user/<name>')
@@ -53,16 +53,35 @@ def page_not_found(e):
 
 
 #Create name page
-app.route('/name', methods=['GET', 'POST'])
+@app.route('/name', methods=['GET', 'POST'])
 def name():
     name = None
     form = NamerForm()
-    #validate form
-    if form.validate_on_submit():
+    if request.method == 'POST':
         name=form.name.data
         form.name.data = ''
+    return render_template("name.html", name=name, form=form)
 
-    return render_template('name.html',
-    name = name,
-    form = form,)
+
+# def register(request):
+#     form = RegistrationForm(request.POST)
+#     if request.method == 'POST' and form.validate():
+#         user = User()
+#         user.username = form.username.data
+#         user.email = form.email.data
+#         user.save()
+#         redirect('register')
+#     return render_response('register.html', form=form)
+
+# app.route('/name', methods=['GET', 'POST'])
+# def name():
+#     name = None
+#     form = NamerForm()
+#     #validate form
+#     if form.validate_on_submit():
+#         name=form.name.data
+#         form.name.data = ''
+#     return render_template('name.html',
+#     name = name,
+#     form = form)
 
