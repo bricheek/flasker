@@ -1,5 +1,5 @@
-from flask import Flask, render_template, request
-from wtforms import Form
+from flask import Flask, render_template, request, flash
+from flask_wtf import FlaskForm
 from wtforms import SubmitField, StringField
 from wtforms.validators import DataRequired, input_required
 
@@ -32,8 +32,8 @@ app.config['SECRET_KEY'] = "secret key ###"
 #     last_name  = StringField('Last Name', validators=[validators.optional()])
 
 #create form class
-class NamerForm(Form):
-    name = StringField("What's Your Name", validators=[input_required()])
+class NamerForm(FlaskForm):
+    name = StringField("What's Your Name?", validators=[DataRequired()])
     submit = SubmitField("Submit")
 
 @app.route('/user/<name>')
@@ -57,9 +57,10 @@ def page_not_found(e):
 def name():
     name = None
     form = NamerForm()
-    if request.method == 'POST':
+    if form.validate_on_submit():
         name=form.name.data
         form.name.data = ''
+        flash("Form Submitted Successfully")
     return render_template("name.html", name=name, form=form)
 
 
