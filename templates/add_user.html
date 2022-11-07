@@ -12,26 +12,38 @@
 {% endfor %}
 
 {% if name %}
-    <h1>Hello {{ name }}!!</h1>
+    <h1>User Added!</h1>
+    <table class="table table-hover table-bordered table-striped">
+    {% for our_user in our_users %}
+        <tr>
+        <td> {{ our_user.id }} . {{ our_user.name }} - {{ our_user.email }} if true</td>
+        </tr>
+    </table>    
+    {% endfor %}
 
 {% else %}
-    <h1>USER NAME PAGE</h1>
+    <h1>User List:</h1>
     <br/>
-    <form method="POST">
-        
+    <div class="shadow p-3 mb-5 bg-body rounded">
+
     <form method="POST">
         {{ form.csrf_token }}
         {{ form.name.label(class="form-label") }}: {{ form.name(class="form-control") }}
         {{ form.email.label(class="form-label") }}: {{ form.email(class="form-control") }}
+        <br/>
         {{ form.submit(class="btn btn-secondary") }}
     </form>
-    <br/>
-    <br/>
-{% endif %}
+    </div>
+    <table class="table table-hover table-bordered table-striped">
+    {% for our_user in our_users %}
+        <tr>
+        
+        <td> {{ our_user.id }} . {{ our_user.name }} - {{ our_user.email }} else </td>
+        </tr>
+    
+    {% endfor %}
+    </table>
 
-{% for our_user in our_users %}
-    {{ our_user.id }} {{ our_user.name }} {{ our_user.email }}
-    <br/>
-{% endfor %}
-{% endblock %}
+    {% endif %}
+    {% endblock %}
  
