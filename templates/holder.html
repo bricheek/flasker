@@ -1,0 +1,15 @@
+{% if name %}
+    <h1>User Added!</h1>
+    <table class="table table-hover table-bordered table-striped">
+    {% for our_user in our_users %}
+        <tr>
+        <td> {{ our_user.id }} . {{ our_user.name }} - {{ our_user.email }} </td>
+        </tr>
+        <br/>
+    </table>    
+    {% endfor %}
+
+{% else %}
+    <h1>User List:</h1>
+    <br/>
+    
