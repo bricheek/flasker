@@ -23,7 +23,6 @@ class Users(db.Model):
     name = db.Column(db.String(200), nullable=False)
     email =db.Column(db.String(120), nullable=False, unique=True)
     date_added =db.Column(db.DateTime, default=datetime.utcnow)
-
     #create a string
     def __repr__(self):
         return '<Name %r>' % self.name
@@ -65,18 +64,20 @@ def user(name):
 @app.route('/user/add', methods=['GET', 'POST'])
 def add_user():
     name = None
+    #user = None
     form = UserForm()
     if form.validate_on_submit():
         user = Users.query.filter_by(email=form.email.data).first()
         if user is None:
             user = Users(name=form.name.data, email=form.email.data)
             db.session.add(user)
-            db.session.commit
-        name=form.name.data
-        form.name.data=""
-        form.email.data=""
+            db.session.commit()
+            name=form.name.data
+            email=form.email.data
+        #form.name.data=""
+        #form.email.data=""
         flash("User Added Successfully")
-    our_users = Users.query.order_by(Users.date_added)
+    our_users = Users.query.order_by(Users.id)
     return render_template("add_user.html", form=form, name=name, our_users=our_users)
 
 # custom error pages
