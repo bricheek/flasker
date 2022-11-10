@@ -8,13 +8,14 @@ from datetime import datetime
 #create flask instance
 app = Flask(__name__)
 # old Sqlite db
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
+#app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
 # new MySQL db
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:password123@localhost/my_users'
 app.config['SECRET_KEY'] = "secret key ###"
 
 db = SQLAlchemy(app)
 db.init_app(app)
+
 
 
 # Create Model
@@ -55,7 +56,6 @@ class UserForm(FlaskForm):
     email = StringField("Email", validators=[DataRequired()])
     submit = SubmitField("Submit")
 
-
 @app.route('/user/<name>')
 def user(name):
     return render_template("user.html", user_name=name)
@@ -79,6 +79,36 @@ def add_user():
         flash("User Added Successfully")
     our_users = Users.query.order_by(Users.id)
     return render_template("add_user.html", form=form, name=name, our_users=our_users)
+
+#update database record
+@app.route('/update/<int:id>', methods=['GET', 'POST'])
+def update(id):
+    form=UserForm()
+    name_to_update=Users.query.get_or_404(id)
+    if request.method == "POST":
+        name_to_update.name = request.form['name']
+        name_to_update.email = request.form['email']
+        try:
+            db.session.commit()
+            flash("User Updated Successfully")
+            return render_template (
+            "update.html", 
+            form=form,
+            name_to_update = name_to_update
+            )
+        except:
+            flash("Error! Try Again Please")
+            return render_template (
+            "update.html", 
+            form=form,
+            name_to_update = name_to_update
+            )
+    else:
+        return render_template (
+            "update.html", 
+            form=form,
+            name_to_update = name_to_update
+            )
 
 # custom error pages
 # Invalid URL
