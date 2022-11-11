@@ -7,6 +7,7 @@ from flask_migrate import Migrate
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import date
+from wtforms.widgets import TextArea
 
 #create flask instance
 app = Flask(__name__)
@@ -20,7 +21,14 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 db.init_app(app)
 
-
+#blog post model
+class Posts(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(255))
+    content = db.Column(db.Text)
+    author = db.Column(db.String(255))
+    date_posted = db.Column(db.DateTime, default=datetime.utcnow)
+    slug = db.Column(db.String(255))
 
 # Create Model
 class Users(db.Model):
@@ -76,6 +84,14 @@ def delete(id):
         our_users = Users.query.order_by(Users.id)
         return render_template("add_user.html", form=form, name=name, our_users=our_users)
         
+#create a posts form
+class PostForm(FlaskForm):
+    title = StringField("title", validators=[DataRequired()])
+    content = StringField("Content", validators=[DataRequired()], widget=TextArea())
+    author = StringField("Author", validators=[DataRequired()])
+    slug = StringField("Slug", validators=[DataRequired()])
+    submit = SubmitField("Submit")
+
 #create form class
 class PasswordForm(FlaskForm):
     email = StringField("What's Your Email?", validators=[DataRequired()])
@@ -103,6 +119,39 @@ class UserForm(FlaskForm):
 @app.route('/user/<name>')
 def user(name):
     return render_template("user.html", user_name=name)
+
+#individual post page
+@app.route('/posts/<int:id>')
+def post(id):
+    post = Posts.query.get_or_404(id)
+    return render_template('post.html', post=post)
+
+#add post page
+@app.route('/add_post', methods=['GET', 'POST'])
+def add_post():
+    form = PostForm()
+    if form.validate_on_submit():
+        post = Posts(
+            title=form.title.data,
+            content=form.content.data,
+            author=form.author.data,
+            slug=form.slug.data
+        )
+        form.title.data = ''
+        form.content.data = ''
+        form.author.data = ''
+        form.slug.data = ''
+        db.session.add(post)
+        db.session.commit()
+        flash("Blog post submitted successfully")
+    return render_template("add_post.html", form=form)
+
+#display blog post (future home page of app)
+@app.route('/posts')
+def posts():
+    posts = Posts.query.order_by(Posts.date_posted)
+    return render_template("posts.html", posts=posts)
+
 
 #create user page
 @app.route('/user/add', methods=['GET', 'POST'])
