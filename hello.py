@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, flash
+from flask import Flask, render_template, request, flash, redirect, url_for
 from flask_wtf import FlaskForm
 from wtforms import SubmitField, StringField, PasswordField, BooleanField, ValidationError
 from wtforms.validators import DataRequired, input_required, EqualTo, Length
@@ -8,6 +8,7 @@ from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import date
 from wtforms.widgets import TextArea
+from flask_login import UserMixin, login_user, LoginManager, login_required, logout_user, current_user
 
 #create flask instance
 app = Flask(__name__)
@@ -21,6 +22,54 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 db.init_app(app)
 
+# Flask Login setup
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+
+@login_manager.user_loader
+def load_user(user_id):
+    return Users.query.get(int(user_id))
+
+
+# create login form
+class LoginForm(FlaskForm):
+    username = StringField("Username", validators=[DataRequired()])
+    password = PasswordField("Password", validators=[DataRequired()])
+    submit = SubmitField("Submit")
+
+# create login page
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = Users.query.filter_by(username=form.username.data).first()
+        if user:
+            #check the hash
+            if check_password_hash(user.password_hash, form.password.data):
+                login_user(user)
+                flash("Login Successful")
+                return redirect(url_for('dashboard'))
+            else:
+                flash("Login unsuccessful, try again")
+        else:
+            flash("User does not exist, try again")
+    return render_template('login.html', form=form)
+
+#Create logout function
+@app.route('/logout', methods=['GET', 'POST'])
+@login_required
+def logout():
+    logout_user
+    flash("You are logged out")
+    return redirect(url_for('login'))
+
+#create dashboard page
+@app.route('/dashboard', methods=['GET', 'POST'])
+@login_required
+def dashboard():
+    return render_template('dashboard.html')
+
 #blog post model
 class Posts(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -31,8 +80,9 @@ class Posts(db.Model):
     slug = db.Column(db.String(255))
 
 # Create Model
-class Users(db.Model):
+class Users(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(20), nullable=False, unique=True)
     name = db.Column(db.String(200), nullable=False)
     email =db.Column(db.String(120), nullable=False, unique=True)
     favorite_color = db.Column(db.String(120))
@@ -83,7 +133,7 @@ def delete(id):
         flash("There was an error deleting, please try again")
         our_users = Users.query.order_by(Users.id)
         return render_template("add_user.html", form=form, name=name, our_users=our_users)
-        
+
 #create a posts form
 class PostForm(FlaskForm):
     title = StringField("title", validators=[DataRequired()])
@@ -106,6 +156,7 @@ class NamerForm(FlaskForm):
 #create form class
 class UserForm(FlaskForm):
     name = StringField("Name", validators=[DataRequired()])
+    username = StringField("Username", validators=[DataRequired()])
     email = StringField("Email", validators=[DataRequired()])
     favorite_color = StringField("Favorite Color")
     password_hash = PasswordField(
@@ -125,6 +176,39 @@ def user(name):
 def post(id):
     post = Posts.query.get_or_404(id)
     return render_template('post.html', post=post)
+
+@app.route('/posts/edit/<int:id>', methods=['GET', 'POST'])
+def edit_post(id):
+    post = Posts.query.get_or_404(id)
+    form = PostForm()
+    if form.validate_on_submit():
+        post.title = form.title.data
+        post.author = form.author.data
+        post.slug = form.slug.data
+        post.content = form.content.data
+        db.session.add(post)
+        db.session.commit()
+        flash("Post has been updated")
+        return redirect(url_for('post', id=post.id))
+    form.title.data = post.title
+    form.author.data = post.author
+    form.slug.data = post.slug
+    form.content.data = post.content
+    return render_template('edit_post.html', form=form)
+
+@app.route('/posts/delete/<int:id>')
+def delete_post(id):
+    post_to_delete = Posts.query.get_or_404(id)
+    try:
+        db.session.delete(post_to_delete)
+        db.session.commit()
+        flash("Blog post was deleted successfully")
+        posts = Posts.query.order_by(Posts.date_posted)
+        return render_template("posts.html", posts=posts)
+    except:
+        flash("Whoops, there was a problem deleting. Try again")
+        posts = Posts.query.order_by(Posts.date_posted)
+        return render_template("posts.html", posts=posts)
 
 #add post page
 @app.route('/add_post', methods=['GET', 'POST'])
@@ -165,6 +249,7 @@ def add_user():
             hashed_pw = generate_password_hash(form.password_hash.data, "sha256")
             user = Users(
                 name=form.name.data, 
+                username=form.username.data,
                 email=form.email.data, 
                 favorite_color=form.favorite_color.data,
                 password_hash=hashed_pw
@@ -174,6 +259,7 @@ def add_user():
             name=form.name.data
             email=form.email.data
         form.name.data=""
+        form.username.data=""
         form.email.data=""
         form.favorite_color.data=""
         form.password_hash = ""
