@@ -14,6 +14,7 @@ from werkzeug.utils import secure_filename
 import uuid as uuid
 import os
 
+
 #create flask instance
 app = Flask(__name__)
 ckeditor = CKEditor(app)
