@@ -21,7 +21,7 @@ ckeditor = CKEditor(app)
 #app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
 # local MySQL db
 #app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:password123@localhost/my_users'
-Postgres Dbase on heroku
+#Postgres Dbase on heroku
 app.config['SQLALCHEMY_DATABASE_URI'] = "postgres://lbizylwmzaxzer:982422db8ff3cd35c3dc42dc07d745a9a3e3e345c440144452f02e360a190f4e@ec2-52-1-17-228.compute-1.amazonaws.com:5432/deu19ae0foeuj9"
 
 app.config['SECRET_KEY'] = "secret key ###"
