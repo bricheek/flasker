@@ -10,15 +10,24 @@ from datetime import date
 from flask_login import UserMixin, login_user, LoginManager, login_required, logout_user, current_user
 from webforms import LoginForm, PostForm, UserForm, PasswordForm, NamerForm, SearchForm
 from flask_ckeditor import CKEditor
+from werkzeug.utils import secure_filename
+import uuid as uuid
+import os
 
 #create flask instance
 app = Flask(__name__)
 ckeditor = CKEditor(app)
 # old Sqlite db
 #app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
-# new MySQL db
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:password123@localhost/my_users'
+# local MySQL db
+#app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:password123@localhost/my_users'
+Postgres Dbase on heroku
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://lbizylwmzaxzer:982422db8ff3cd35c3dc42dc07d745a9a3e3e345c440144452f02e360a190f4e@ec2-52-1-17-228.compute-1.amazonaws.com:5432/deu19ae0foeuj9
+'
 app.config['SECRET_KEY'] = "secret key ###"
+
+UPLOAD_FOLDER = "/Users/brian/Documents/flasker/static/images/"
+app.config['UPLOAD_FOLDER']=UPLOAD_FOLDER
 
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
@@ -101,6 +110,12 @@ def dashboard():
         name_to_update.email = request.form['email']
         name_to_update.favorite_color = request.form['favorite_color']
         name_to_update.about_author = request.form['about_author']
+        name_to_update.profile_pic = request.files['profile_pic']
+        pic_filename=secure_filename(name_to_update.profile_pic.filename)
+        pic_name = str(uuid.uuid1())+ "_" +pic_filename
+        name_to_update.profile_pic.save(os.path.join(app.config['UPLOAD_FOLDER']), pic_name)
+        name_to_update.profile_pic = pic_name
+
         try:
             db.session.commit()
             flash("User Updated Successfully")
@@ -380,8 +395,9 @@ class Users(db.Model, UserMixin):
     name = db.Column(db.String(200), nullable=False)
     email =db.Column(db.String(120), nullable=False, unique=True)
     favorite_color = db.Column(db.String(120))
-    about_author = db.Column(db.Text(500), nullable=True)
+    about_author = db.Column(db.Text(), nullable=True)
     date_added =db.Column(db.DateTime, default=datetime.utcnow)
+    profile_pic=db.Column(db.String(255), nullable=True)
     #integrating passwords
     password_hash = db.Column(db.String(128))
     # user can have many posts
