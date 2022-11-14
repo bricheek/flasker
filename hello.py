@@ -9,9 +9,11 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import date
 from flask_login import UserMixin, login_user, LoginManager, login_required, logout_user, current_user
 from webforms import LoginForm, PostForm, UserForm, PasswordForm, NamerForm, SearchForm
+from flask_ckeditor import CKEditor
 
 #create flask instance
 app = Flask(__name__)
+ckeditor = CKEditor(app)
 # old Sqlite db
 #app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
 # new MySQL db
@@ -37,13 +39,28 @@ def base():
     form = SearchForm()
     return dict(form=form)
 
+@app.route('/admin')
+@login_required
+def admin():
+    id = current_user.id 
+    if id == 30:
+        return render_template("admin.html")
+    else:
+        flash("Sorry, page restricted to admin users only")
+        return redirect(url_for('dashboard'))
+
+
 # create search function
 @app.route('/search', methods=['POST'])
 def search():
     form = SearchForm()
+    posts = Posts.query
     if form.validate_on_submit():
-        post.searched = form.searched.data
-        return render_template("search.html", form=form, searched=post.searched)
+        post_searched = form.searched.data
+        posts = posts.filter(Posts.content.like('%' + post_searched + '%'))
+        posts = posts.order_by(Posts.title).all()
+        return render_template('search.html', form=form, searched=post_searched, posts=posts)
+        
 
 # create login page
 @app.route('/login', methods=['GET', 'POST'])
@@ -83,6 +100,7 @@ def dashboard():
         name_to_update.username = request.form['username']
         name_to_update.email = request.form['email']
         name_to_update.favorite_color = request.form['favorite_color']
+        name_to_update.about_author = request.form['about_author']
         try:
             db.session.commit()
             flash("User Updated Successfully")
@@ -195,8 +213,10 @@ def delete_post(id):
         flash("You cannot delete post of another user")
         posts = Posts.query.order_by(Posts.date_posted)
         return render_template("posts.html", posts=posts)
+
 #add post page
 @app.route('/add_post', methods=['GET', 'POST'])
+@login_required
 def add_post():
     form = PostForm()
     if form.validate_on_submit():
@@ -360,6 +380,7 @@ class Users(db.Model, UserMixin):
     name = db.Column(db.String(200), nullable=False)
     email =db.Column(db.String(120), nullable=False, unique=True)
     favorite_color = db.Column(db.String(120))
+    about_author = db.Column(db.Text(500), nullable=True)
     date_added =db.Column(db.DateTime, default=datetime.utcnow)
     #integrating passwords
     password_hash = db.Column(db.String(128))
