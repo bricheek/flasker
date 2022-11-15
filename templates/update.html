@@ -11,7 +11,7 @@
 
 {% endfor %}
 
-{% if id == current_user.id %}
+{% if id == current_user.id or id == 1 %}
 
     <h1>Update User:</h1>
 
@@ -26,6 +26,9 @@
         <br/>
         {{ form.email.label(class="form-label") }}: 
         {{ form.email(class="form-control", value=name_to_update.email) }}
+        <br/>
+        {{ form.favorite_color.label(class="form-label") }}: 
+        {{ form.favorite_color(class="form-control", value=name_to_update.favorite_color) }}
         <br/>
         {{ form.favorite_color.label(class="form-label") }}: 
         {{ form.favorite_color(class="form-control", value=name_to_update.favorite_color) }}
