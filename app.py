@@ -13,10 +13,13 @@ from flask_ckeditor import CKEditor
 from werkzeug.utils import secure_filename
 import uuid as uuid
 import os
+import click
+
 
 
 #create flask instance
 app = Flask(__name__)
+
 ckeditor = CKEditor(app)
 # old Sqlite db
 #app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
@@ -32,6 +35,27 @@ app.config['UPLOAD_FOLDER']=UPLOAD_FOLDER
 
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
+#def init_app(app):
+    #db.init_app(app)
+
+# def create_db(self):
+#     """Creates database"""
+#     db.create_all()
+    
+# def drop_db():
+#     """Cleans database"""
+#     db.drop_all()
+
+# def create_model_table():
+#     """ Create table model in the database """
+#     Posts.__table__.create(db.engine)
+#     Users.__table__.create(db.engine)
+    
+# def init_app(app):
+#     # add multiple commands in a bulk
+#     for command in [create_db, drop_db, create_model_table]:
+#         app.cli.add_command(app.cli.command()(command))
+
 db.init_app(app)
 
 # Flask Login setup
@@ -418,3 +442,6 @@ class Users(db.Model, UserMixin):
     #create a string
     def __repr__(self):
         return '<Name %r>' % self.name
+
+with app.app_context():
+    db.create_all()
