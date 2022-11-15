@@ -197,7 +197,7 @@ def index():
 @app.route('/delete/<int:id>')
 @login_required
 def delete(id):
-    if id == current_user.id or id == 3:
+    if id == current_user.id or current_user.id == 1:
         user_to_delete=Users.query.get_or_404(id)
         Name = None
         form = UserForm()
@@ -239,7 +239,7 @@ def edit_post(id):
         db.session.commit()
         flash("Post has been updated")
         return redirect(url_for('post', id=post.id))
-    if current_user.id == post.poster_id or current_user.id == 3:
+    if current_user.id == post.poster_id or current_user.id == 1:
         form.title.data = post.title
         #form.author.data = post.author
         form.slug.data = post.slug
@@ -257,7 +257,7 @@ def edit_post(id):
 def delete_post(id):
     post_to_delete = Posts.query.get_or_404(id)
     val_id = current_user.id
-    if val_id == post_to_delete.poster.id or val_id == 3:
+    if val_id == post_to_delete.poster.id or val_id == 1:
         try:
             db.session.delete(post_to_delete)
             db.session.commit()
@@ -343,6 +343,7 @@ def update(id):
         name_to_update.username = request.form['username']
         name_to_update.email = request.form['email']
         name_to_update.favorite_color = request.form['favorite_color']
+        name_to_update.about_author = request.form['about_author']
         try:
             db.session.commit()
             flash("User Updated Successfully")
