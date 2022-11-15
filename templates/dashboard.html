@@ -35,14 +35,16 @@
           class="btn btn-secondary btn-sm">Update Profile</a>
         <a href="{{ url_for('delete', id=current_user.id) }}" class="btn btn-danger btn-sm">Delete</a>
               </div>
-            <div class="col-4">
-        <img src="{{ url_for('static', filename='images/def_profile1.png') }}" width="150" align="right">
-            </div>
+            
+              <div class="col-4">
+                  {% if current_user.profile_pic %}
+                  <img src="{{ url_for('static', filename='images/' + current_user.profile_pic) }}" width="150" align="right">
+                  {% else %}
+                  <img src="{{ url_for('static', filename='images/def_profile1.png') }}" width="150" align="right">
+                  {% endif %}
+              </div>
           </div>
       </div>
-    
-
-
     <br/>
     <div class="card">
       <div class="card-header">
