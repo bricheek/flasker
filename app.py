@@ -77,7 +77,7 @@ def base():
 @login_required
 def admin():
     id = current_user.id 
-    if id == 30:
+    if id == 3:
         return render_template("admin.html")
     else:
         flash("Sorry, page restricted to admin users only")
@@ -179,21 +179,25 @@ def index():
 
 #delete user class
 @app.route('/delete/<int:id>')
+@login_required
 def delete(id):
-    user_to_delete=Users.query.get_or_404(id)
-    Name = None
-    form = UserForm()
-    try:
-        db.session.delete(user_to_delete)
-        db.session.commit()
-        flash("User Deleted Successfully")
-        our_users = Users.query.order_by(Users.id)
-        return render_template("add_user.html", form=form, name=name, our_users=our_users)
-    except:
-        flash("There was an error deleting, please try again")
-        our_users = Users.query.order_by(Users.id)
-        return render_template("add_user.html", form=form, name=name, our_users=our_users)
-
+    if id == current_user.id:
+        user_to_delete=Users.query.get_or_404(id)
+        Name = None
+        form = UserForm()
+        try:
+            db.session.delete(user_to_delete)
+            db.session.commit()
+            flash("User Deleted Successfully")
+            our_users = Users.query.order_by(Users.id)
+            return render_template("add_user.html", form=form, name=name, our_users=our_users)
+        except:
+            flash("There was an error deleting, please try again")
+            our_users = Users.query.order_by(Users.id)
+            return render_template("add_user.html", form=form, name=name, our_users=our_users)
+    else:
+        flash("You do not have permission to delete that user")
+        return redirect(url_for('dashboard'))
 
 @app.route('/user/<name>')
 def user(name):
