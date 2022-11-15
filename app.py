@@ -184,14 +184,7 @@ def dashboard():
 #create a route decorator
 @app.route('/')
 def index():
-    first_name = "John"
-    stuff = "This is bold text."
-    favorite_pizza = ["Pepperoni", "Cheese", "Mushroom", 41]
-    return render_template("index.html", 
-    given_name = first_name, 
-    stuff=stuff,
-    favorite_pizza=favorite_pizza
-    )
+    return redirect("/login",)
 
 #delete user class
 @app.route('/delete/<int:id>')
@@ -215,9 +208,9 @@ def delete(id):
         flash("You do not have permission to delete that user")
         return redirect(url_for('dashboard'))
 
-@app.route('/user/<name>')
-def user(name):
-    return render_template("user.html", user_name=name)
+# @app.route('/user/<name>')
+# def user(name):
+#     return render_template("user.html", user_name=name)
 
 #individual post page
 @app.route('/posts/<int:id>')
@@ -381,15 +374,15 @@ def page_not_found(e):
     return render_template("500.html"), 500
 
 #Create name page
-@app.route('/name', methods=['GET', 'POST'])
-def name():
-    name = None
-    form = NamerForm()
-    if form.validate_on_submit():
-        name=form.name.data
-        form.name.data = ''
-        flash("Form Submitted Successfully")
-    return render_template("name.html", name=name, form=form)
+# @app.route('/name', methods=['GET', 'POST'])
+# def name():
+#     name = None
+#     form = NamerForm()
+#     if form.validate_on_submit():
+#         name=form.name.data
+#         form.name.data = ''
+#         flash("Form Submitted Successfully")
+#     return render_template("name.html", name=name, form=form)
 
 #Create password test page
 @app.route('/test_pw', methods=['GET', 'POST'])
